@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lector de Patentes</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background-color: #f0f0f0;
+    }
+    video, canvas {
+      width: 90%;
+      max-width: 400px;
+      margin-top: 10px;
+    }
+    #resultado {
+      margin-top: 20px;
+      font-size: 1.2em;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Leer Patente del Vehículo</h1>
+  <video id="video" autoplay></video>
+  <br>
+  <button onclick="capturar()">Capturar</button>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <div id="resultado">Resultado: </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const resultado = document.getElementById('resultado');
+    const context = canvas.getContext('2d');
+
+    // Solicita acceso a la cámara
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        alert("No se pudo acceder a la cámara: " + err);
+      });
+
+    function capturar() {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      Tesseract.recognize(
+        canvas,
+        'eng', // Cambiar a 'spa' si usas español
+        {
+          logger: m => console.log(m)
+        }
+      ).then(({ data: { text } }) => {
+        resultado.textContent = "Resultado: " + text.trim();
+      }).catch(err => {
+        resultado.textContent = "Error al procesar: " + err;
+      });
+    }
+  </script>
+</body>
+</html>
